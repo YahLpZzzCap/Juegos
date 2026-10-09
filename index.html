@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GamerVerse - Portal de Videojuegos</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Gaming Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        orbitron: ['Orbitron', 'sans-serif'],
+                        rajdhani: ['Rajdhani', 'sans-serif'],
+                    },
+                    colors: {
+                        neonCyan: '#00f3ff',
+                        neonPurple: '#bf00ff',
+                        neonPink: '#ff007f',
+                        darkBg: '#0b0e14',
+                        cardBg: 'rgba(18, 24, 38, 0.85)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background-color: #080a0f;
+            color: #e2e8f0;
+            overflow-x: hidden;
+        }
+
+        /* Custom Neon Glows */
+        .neon-border-cyan {
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.4), inset 0 0 15px rgba(0, 243, 255, 0.2);
+            border: 1px solid rgba(0, 243, 255, 0.6);
+        }
+        .neon-border-purple {
+            box-shadow: 0 0 15px rgba(191, 0, 255, 0.4), inset 0 0 15px rgba(191, 0, 255, 0.2);
+            border: 1px solid rgba(191, 0, 255, 0.6);
+        }
+        .neon-text-cyan {
+            text-shadow: 0 0 8px rgba(0, 243, 255, 0.8);
+        }
+        .neon-text-purple {
+            text-shadow: 0 0 8px rgba(191, 0, 255, 0.8);
+        }
+        
+        /* Grid background pattern */
+        .bg-grid-pattern {
+            background-image: linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+
+        /* Animated gradient overlay */
+        .cyber-bg {
+            background: radial-gradient(circle at 50% 20%, rgba(191, 0, 255, 0.15), transparent 40%),
+                        radial-gradient(circle at 80% 80%, rgba(0, 243, 255, 0.15), transparent 40%);
+        }
+
+        /* Scrollbar custom */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0b0e14;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #bf00ff;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00f3ff;
+        }
+    </style>
+</head>
+<body class="bg-darkBg min-h-screen bg-grid-pattern cyber-bg flex flex-col justify-between">
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-3"></div>
+
+
+    <!-- ==================== SCREEN 1: AUTHENTICATION ==================== -->
+    <div id="auth-screen" class="min-h-screen flex items-center justify-center p-4">
+        <div class="max-w-md w-full bg-cardBg backdrop-blur-md rounded-2xl p-8 neon-border-purple transition-all duration-300">
+            <!-- Header/Logo -->
+            <div class="text-center mb-6">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-purple-900/40 text-neonCyan mb-3 neon-border-cyan">
+                    <i class="fa-solid fa-gamepad text-3xl"></i>
+                </div>
+                <h1 class="font-orbitron text-3xl font-extrabold tracking-wider text-white">GAMER<span class="text-neonCyan">VERSE</span></h1>
+                <p class="text-gray-400 text-sm mt-1">Tu portal definitivo de videojuegos</p>
+            </div>
+
+            <!-- Auth Mode Switch Tabs -->
+            <div class="flex rounded-lg bg-gray-900/80 p-1 mb-6 border border-gray-800">
+                <button id="tab-login" onclick="switchTab('login')" class="flex-1 py-2 rounded-md font-orbitron text-sm font-semibold transition-all text-neonCyan bg-gray-800 shadow">
+                    <i class="fa-solid fa-right-to-bracket mr-2"></i>Login
+                </button>
+                <button id="tab-register" onclick="switchTab('register')" class="flex-1 py-2 rounded-md font-orbitron text-sm font-semibold transition-all text-gray-400 hover:text-white">
+                    <i class="fa-solid fa-user-plus mr-2"></i>Registro
+                </button>
+            </div>
+
+            <!-- FORM: LOGIN -->
+            <form id="form-login" onsubmit="handleLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1">Correo Electrónico</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+                            <i class="fa-solid fa-envelope"></i>
+                        </span>
+                        <input type="email" id="login-email" required class="w-full bg-gray-900/90 border border-gray-700 rounded-lg py-2.5 pl-10 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-neonCyan transition" placeholder="tu_email@gamer.com">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1">Contraseña</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+                            <i class="fa-solid fa-lock"></i>
+                        </span>
+                        <input type="password" id="login-password" required class="w-full bg-gray-900/90 border border-gray-700 rounded-lg py-2.5 pl-10 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-neonCyan transition" placeholder="••••••••">
+                    </div>
+                </div>
+
+                <button type="submit" id="btn-login" class="w-full py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-orbitron font-bold rounded-lg shadow-lg hover:shadow-purple-500/50 transition transform active:scale-95 flex items-center justify-center gap-2">
+                    <span>INICIAR SESIÓN</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </form>
+
+            <!-- FORM: REGISTER -->
+            <form id="form-register" onsubmit="handleRegister(event)" class="space-y-4 hidden">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1">Nombre de Usuario (GamerTag)</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+                            <i class="fa-solid fa-user-ninja"></i>
+                        </span>
+                        <input type="text" id="reg-username" required class="w-full bg-gray-900/90 border border-gray-700 rounded-lg py-2.5 pl-10 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-neonPurple transition" placeholder="CyberPlayer99">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1">Correo Electrónico</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+                            <i class="fa-solid fa-envelope"></i>
+                        </span>
+                        <input type="email" id="reg-email" required class="w-full bg-gray-900/90 border border-gray-700 rounded-lg py-2.5 pl-10 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-neonPurple transition" placeholder="tu_email@gamer.com">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1">Juego Favorito</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+                            <i class="fa-solid fa-trophy"></i>
+                        </span>
+                        <input type="text" id="reg-fav-game" required class="w-full bg-gray-900/90 border border-gray-700 rounded-lg py-2.5 pl-10 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-neonPurple transition" placeholder="Ej: Elden Ring, Zelda, Cyberpunk">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-1">Contraseña</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+                            <i class="fa-solid fa-lock"></i>
+                        </span>
+                        <input type="password" id="reg-password" minlength="6" required class="w-full bg-gray-900/90 border border-gray-700 rounded-lg py-2.5 pl-10 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-neonPurple transition" placeholder="Mínimo 6 caracteres">
+                    </div>
+                </div>
+
+                <button type="submit" id="btn-register" class="w-full py-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-orbitron font-bold rounded-lg shadow-lg hover:shadow-cyan-500/50 transition transform active:scale-95 flex items-center justify-center gap-2">
+                    <span>CREAR CUENTA</span>
+                    <i class="fa-solid fa-user-check"></i>
+                </button>
+            </form>
+
+            <div class="relative my-6">
+                <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-gray-800"></div></div>
+                <div class="relative flex justify-center text-xs uppercase"><span class="bg-cardBg px-2 text-gray-500 font-semibold">O prueba sin registro</span></div>
+            </div>
+
+            <!-- Demo Button -->
+            <button onclick="handleGuestLogin()" class="w-full py-2.5 bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-300 hover:text-white font-orbitron text-sm rounded-lg transition flex items-center justify-center gap-2">
+                <i class="fa-solid fa-ghost text-neonCyan"></i>
+                <span>Entrar como Invitado (Modo Demo)</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- ==================== SCREEN 2: MAIN DASHBOARD ==================== -->
+    <div id="dashboard-screen" class="hidden min-h-screen flex flex-col">
+        <!-- Navigation Bar -->
+        <header class="bg-gray-900/90 backdrop-blur-md border-b border-gray-800 sticky top-0 z-40">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+                <!-- Brand -->
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-gradient-to-tr from-purple-600 to-cyan-400 flex items-center justify-center text-white font-bold text-xl shadow-lg">
+                        <i class="fa-solid fa-headset"></i>
+                    </div>
+                    <span class="font-orbitron font-extrabold text-2xl text-white tracking-wider">GAMER<span class="text-neonCyan">VERSE</span></span>
+                </div>
+
+                <!-- Navigation Tabs -->
+                <nav class="hidden md:flex space-x-6">
+                    <button onclick="switchDashboardTab('games')" id="nav-games" class="px-3 py-2 text-neonCyan font-orbitron font-semibold border-b-2 border-neonCyan">
+                        <i class="fa-solid fa-gamepad mr-2"></i>Catálogo
+                    </button>
+                    <button onclick="switchDashboardTab('profile')" id="nav-profile" class="px-3 py-2 text-gray-400 hover:text-white font-orbitron font-semibold transition">
+                        <i class="fa-solid fa-id-card mr-2"></i>Mi Perfil Gamer
+                    </button>
+                </nav>
+
+                <!-- User Info & Logout -->
+                <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-3 bg-gray-800/80 px-3 py-1.5 rounded-full border border-gray-700">
+                        <img id="user-avatar" src="https://placehold.co/100x100/bf00ff/ffffff?text=Gamer" alt="Avatar" class="w-8 h-8 rounded-full border border-neonCyan object-cover">
+                        <div class="text-left hidden sm:block">
+                            <p id="user-display-name" class="text-sm font-bold text-white leading-tight">Cargando...</p>
+                            <p id="user-email-display" class="text-xs text-gray-400 leading-tight">...</p>
+                        </div>
+                    </div>
+
+                    <button onclick="handleLogout()" class="p-2.5 bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white border border-red-500/30 rounded-lg transition" title="Cerrar Sesión">
+                        <i class="fa-solid fa-power-off"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Mobile Navigation -->
+            <div class="flex md:hidden border-t border-gray-800 bg-gray-900/90">
+                <button onclick="switchDashboardTab('games')" id="mobile-nav-games" class="flex-1 py-3 text-center text-neonCyan font-orbitron text-xs font-semibold border-b-2 border-neonCyan">
+                    Catálogo
+                </button>
+                <button onclick="switchDashboardTab('profile')" id="mobile-nav-profile" class="flex-1 py-3 text-center text-gray-400 font-orbitron text-xs font-semibold">
+                    Mi Perfil
+                </button>
+            </div>
+        </header>
+
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
+            
+            <!-- VIEW 1: GAMES CATALOG -->
+            <section id="view-games" class="space-y-8">
+                <!-- Hero Banner -->
+                <div class="relative rounded-2xl overflow-hidden neon-border-purple bg-gradient-to-r from-purple-900/60 to-blue-900/60 p-8 md:p-12">
+                    <div class="max-w-2xl relative z-10">
+                        <span class="bg-neonPurple/20 text-neonPurple px-3 py-1 rounded-full text-xs font-orbitron tracking-wider border border-neonPurple/50 uppercase">Destacado del Mes</span>
+                        <h2 class="font-orbitron text-3xl md:text-5xl font-black text-white my-3">CYBERPUNK 2077: PHANTOM LIBERTY</h2>
+                        <p class="text-gray-300 text-sm md:text-base mb-6">Aventúrate en Dogtown en esta emocionante expansión de espionaje y supervivencia urbana.</p>
+                        <button class="px-6 py-3 bg-neonCyan text-black font-orbitron font-bold rounded-lg hover:bg-white transition flex items-center gap-2 shadow-lg shadow-neonCyan/30">
+                            <i class="fa-solid fa-play"></i> Ver Tráiler Destacado
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Games Search & Filter -->
+                <div class="flex flex-col sm:flex-row gap-4 justify-between items-center">
+                    <h3 class="font-orbitron text-2xl font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-fire text-neonPink"></i> Juegos Populares
+                    </h3>
+                    <div class="w-full sm:w-72 relative">
+                        <input type="text" id="game-search" onkeyup="filterGames()" placeholder="Buscar videojuegos..." class="w-full bg-gray-900/90 border border-gray-700 rounded-lg py-2 pl-9 pr-4 text-sm text-white focus:outline-none focus:border-neonCyan">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-gray-500 text-sm"></i>
+                    </div>
+                </div>
+
+                <!-- Games Grid -->
+                <div id="games-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Cards are populated dynamically -->
+                </div>
+            </section>
+
+            <!-- VIEW 2: GAMER PROFILE -->
+            <section id="view-profile" class="hidden space-y-8">
+                <div class="bg-cardBg backdrop-blur-md rounded-2xl p-6 md:p-8 neon-border-cyan">
+                    <div class="flex flex-col md:flex-row gap-8 items-start">
+                        <!-- Profile Avatar & Rank -->
+                        <div class="flex flex-col items-center text-center w-full md:w-auto">
+                            <div class="relative group">
+                                <img id="profile-avatar-large" src="https://placehold.co/150x150/bf00ff/ffffff?text=Gamer" class="w-32 h-32 rounded-2xl border-2 border-neonCyan object-cover shadow-xl">
+                                <div class="absolute inset-0 bg-black/60 rounded-2xl opacity-0 group-hover:opacity-100 flex items-center justify-center transition cursor-pointer" onclick="changeAvatar()">
+                                    <i class="fa-solid fa-camera text-white text-2xl"></i>
+                                </div>
+                            </div>
+                            <span id="profile-rank" class="mt-4 bg-purple-900/60 text-neonCyan px-4 py-1 rounded-full font-orbitron text-xs font-bold border border-neonCyan/40">
+                                NIVEL 12 • PRO GAMER
+                            </span>
+                        </div>
+
+                        <!-- Profile Info & Edit -->
+                        <div class="flex-1 space-y-6 w-full">
+                            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-800 pb-4">
+                                <div>
+                                    <h2 id="profile-username" class="font-orbitron text-3xl font-extrabold text-white">...</h2>
+                                    <p id="profile-email" class="text-gray-400 text-sm">...</p>
+                                </div>
+                                <button onclick="toggleProfileEdit()" id="btn-edit-profile" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-neonCyan border border-neonCyan/40 font-orbitron text-xs rounded-lg transition flex items-center gap-2">
+                                    <i class="fa-solid fa-pen-to-square"></i> Editar Perfil
+                                </button>
+                            </div>
+
+                            <!-- Details Grid -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div class="bg-gray-900/80 p-4 rounded-xl border border-gray-800">
+                                    <span class="text-xs text-gray-500 uppercase tracking-wider font-semibold block">Juego Favorito</span>
+                                    <p id="profile-fav-game" class="font-orbitron text-lg text-neonCyan font-bold mt-1">...</p>
+                                </div>
+
+                                <div class="bg-gray-900/80 p-4 rounded-xl border border-gray-800">
+                                    <span class="text-xs text-gray-500 uppercase tracking-wider font-semibold block">Fecha de Registro</span>
+                                    <p id="profile-created-at" class="font-orbitron text-lg text-white font-bold mt-1">...</p>
+                                </div>
+                            </div>
+
+                            <!-- Edit Form (Hidden by Default) -->
+                            <form id="edit-profile-form" onsubmit="saveProfileChanges(event)" class="hidden bg-gray-900/90 p-4 rounded-xl border border-neonPurple space-y-4">
+                                <h4 class="font-orbitron text-sm font-bold text-neonPurple">Actualizar Datos de Perfil</h4>
+                                <div>
+                                    <label class="block text-xs text-gray-400 mb-1">Nombre de Usuario</label>
+                                    <input type="text" id="edit-username" class="w-full bg-gray-800 border border-gray-700 rounded-lg py-2 px-3 text-white text-sm focus:outline-none focus:border-neonPurple">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-gray-400 mb-1">Juego Favorito</label>
+                                    <input type="text" id="edit-fav-game" class="w-full bg-gray-800 border border-gray-700 rounded-lg py-2 px-3 text-white text-sm focus:outline-none focus:border-neonPurple">
+                                </div>
+                                <div class="flex justify-end gap-2">
+                                    <button type="button" onclick="toggleProfileEdit()" class="px-3 py-1.5 bg-gray-800 text-gray-300 text-xs font-orbitron rounded-lg">Cancelar</button>
+                                    <button type="submit" class="px-4 py-1.5 bg-neonPurple text-white text-xs font-orbitron font-bold rounded-lg shadow hover:bg-purple-600">Guardar Cambios</button>
+                                </div>
+                            </form>
+
+                            <!-- Wishlist Section -->
+                            <div class="pt-4">
+                                <h3 class="font-orbitron text-xl font-bold text-white mb-4 flex items-center gap-2">
+                                    <i class="fa-solid fa-heart text-neonPink"></i> Lista de Juegos Deseados
+                                </h3>
+                                <div id="wishlist-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <p class="text-gray-500 text-sm italic col-span-2">No has añadido juegos a tu lista aún.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-gray-900/80 border-t border-gray-800 py-6 text-center text-xs text-gray-500">
+            <p>© 2026 GamerVerse Inc. Sistema de Autenticación & Persistencia en Firebase.</p>
+        </footer>
+    </div>
+
+    <!-- Firebase Libraries -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { 
+            getAuth, 
+            signInWithEmailAndPassword, 
+            createUserWithEmailAndPassword, 
+            signOut, 
+            onAuthStateChanged,
+            signInAnonymously,
+            signInWithCustomToken
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { 
+            getFirestore, 
+            doc, 
+            setDoc, 
+            getDoc, 
+            updateDoc 
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Global App & Firebase Configuration
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'gamerverse-app';
+        
+        // Default Config with fallback
+        const firebaseConfig = typeof __firebase_config !== 'undefined' 
+            ? JSON.parse(__firebase_config) 
+            : {
+                apiKey: "AIzaSyDemoKeyForTesting1234567890",
+                authDomain: "demo-project.firebaseapp.com",
+                projectId: "demo-project",
+                storageBucket: "demo-project.appspot.com",
+                messagingSenderId: "1234567890",
+                appId: "1:1234567890:web:abcdef123456"
+            };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Global State
+        window.currentUserData = null;
+        window.userWishlist = [];
+
+        // Sample Games Database
+        const GAMES_DATABASE = [
+            {
+                id: 'game-1',
+                title: 'Elden Ring',
+                genre: 'Action RPG',
+                rating: '4.9',
+                image: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=600&q=80',
+                description: 'Un épico juego de rol y acción ambientado en un vasto mundo abierto de fantasía creado por Hidetaka Miyazaki y George R.R. Martin.'
+            },
+            {
+                id: 'game-2',
+                title: 'Cyberpunk 2077',
+                genre: 'Sci-Fi RPG',
+                rating: '4.7',
+                image: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=600&q=80',
+                description: 'Un RPG de acción de mundo abierto ambientado en Night City, una megalópolis obsesionada con el poder, el glamur y la modificación corporal.'
+            },
+            {
+                id: 'game-3',
+                title: 'Valorant',
+                genre: 'Tactical Shooter',
+                rating: '4.5',
+                image: 'https://images.unsplash.com/photo-1538481199705-c710c4e965fc?auto=format&fit=crop&w=600&q=80',
+                description: 'Un juego de disparos táctico en primera persona 5v5 impulsado por personajes con habilidades únicas.'
+            },
+            {
+                id: 'game-4',
+                title: 'God of War Ragnarök',
+                genre: 'Action Adventure',
+                rating: '4.9',
+                image: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80',
+                description: 'Embarca en un viaje mítico con Kratos y Atreus en busca de respuestas antes de que llegue el Ragnarök.'
+            },
+            {
+                id: 'game-5',
+                title: 'The Witcher 3',
+                genre: 'Fantasy RPG',
+                rating: '4.8',
+                image: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=600&q=80',
+                description: 'Conviértete en Geralt de Rivia, cazador de monstruos a sueldo, en un mundo devastado por la guerra.'
+            },
+            {
+                id: 'game-6',
+                title: 'Hollow Knight',
+                genre: 'Metroidvania',
+                rating: '4.9',
+                image: 'https://images.unsplash.com/photo-1612287230202-1ff1d85d1bdf?auto=format&fit=crop&w=600&q=80',
+                description: 'Forja tu propio camino en Hollow Knight. Una aventura épica a través de un reino ruin de insectos y héroes.'
+            }
+        ];
+
+
+        // Toast Helper
+        window.showToast = function(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const colors = {
+                success: 'border-green-500 text-green-400 bg-gray-900/90',
+                error: 'border-red-500 text-red-400 bg-gray-900/90',
+                info: 'border-neonCyan text-neonCyan bg-gray-900/90'
+            };
+            
+            toast.className = `px-4 py-3 rounded-xl border text-sm font-semibold shadow-lg backdrop-blur-md flex items-center gap-3 transition-all duration-300 transform translate-x-full ${colors[type] || colors.info}`;
+            toast.innerHTML = `<i class="fa-solid ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-triangle' : 'fa-info-circle'}"></i> <span>${message}</span>`;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => { toast.classList.remove('translate-x-full'); }, 10);
+            setTimeout(() => {
+                toast.classList.add('translate-x-full');
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        };
+
+        // UI Tab Switcher (Login/Register)
+        window.switchTab = function(mode) {
+            const loginForm = document.getElementById('form-login');
+            const regForm = document.getElementById('form-register');
+            const tabLogin = document.getElementById('tab-login');
+            const tabReg = document.getElementById('tab-register');
+
+            if (mode === 'login') {
+                loginForm.classList.remove('hidden');
+                regForm.classList.add('hidden');
+                tabLogin.className = "flex-1 py-2 rounded-md font-orbitron text-sm font-semibold transition-all text-neonCyan bg-gray-800 shadow";
+                tabReg.className = "flex-1 py-2 rounded-md font-orbitron text-sm font-semibold transition-all text-gray-400 hover:text-white";
+            } else {
+                loginForm.classList.add('hidden');
+                regForm.classList.remove('hidden');
+                tabReg.className = "flex-1 py-2 rounded-md font-orbitron text-sm font-semibold transition-all text-neonPurple bg-gray-800 shadow";
+                tabLogin.className = "flex-1 py-2 rounded-md font-orbitron text-sm font-semibold transition-all text-gray-400 hover:text-white";
+            }
+        };
+
+        // Navigation between Dashboard Tabs
+        window.switchDashboardTab = function(tab) {
+            const viewGames = document.getElementById('view-games');
+            const viewProfile = document.getElementById('view-profile');
+            const navGames = document.getElementById('nav-games');
+            const navProfile = document.getElementById('nav-profile');
+            const mobileNavGames = document.getElementById('mobile-nav-games');
+            const mobileNavProfile = document.getElementById('mobile-nav-profile');
+
+            if (tab === 'games') {
+                viewGames.classList.remove('hidden');
+                viewProfile.classList.add('hidden');
+                
+                navGames.className = "px-3 py-2 text-neonCyan font-orbitron font-semibold border-b-2 border-neonCyan";
+                navProfile.className = "px-3 py-2 text-gray-400 hover:text-white font-orbitron font-semibold transition";
+                
+                mobileNavGames.className = "flex-1 py-3 text-center text-neonCyan font-orbitron text-xs font-semibold border-b-2 border-neonCyan";
+                mobileNavProfile.className = "flex-1 py-3 text-center text-gray-400 font-orbitron text-xs font-semibold";
+            } else {
+                viewGames.classList.add('hidden');
+                viewProfile.classList.remove('hidden');
+                
+                navProfile.className = "px-3 py-2 text-neonCyan font-orbitron font-semibold border-b-2 border-neonCyan";
+                navGames.className = "px-3 py-2 text-gray-400 hover:text-white font-orbitron font-semibold transition";
+                
+                mobileNavProfile.className = "flex-1 py-3 text-center text-neonCyan font-orbitron text-xs font-semibold border-b-2 border-neonCyan";
+                mobileNavGames.className = "flex-1 py-3 text-center text-gray-400 font-orbitron text-xs font-semibold";
+            }
+        };
+
+
+        // Fetch User Data from Firestore
+        async function fetchUserData(user) {
+            try {
+                // RULE 1: Standardized user path
+                const userDocRef = doc(db, 'artifacts', appId, 'users', user.uid, 'profile', 'info');
+                const docSnap = await getDoc(userDocRef);
+
+                if (docSnap.exists()) {
+                    window.currentUserData = docSnap.data();
+                } else {
+                    // Create initial profile if missing
+                    const initialData = {
+                        username: user.displayName || user.email.split('@')[0],
+                        email: user.email || 'invitado@gamerverse.com',
+                        favGame: 'Cyberpunk 2077',
+                        createdAt: new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' }),
+                        avatar: `https://placehold.co/150x150/bf00ff/ffffff?text=${(user.email || 'Gamer').charAt(0).toUpperCase()}`,
+                        wishlist: []
+                    };
+                    await setDoc(userDocRef, initialData);
+                    window.currentUserData = initialData;
+                }
+
+                updateDashboardUI();
+            } catch (error) {
+                console.error("Error fetching user profile:", error);
+                showToast("Error al cargar datos de usuario", "error");
+            }
+        }
+
+        // Update Dashboard with User Data
+        function updateDashboardUI() {
+            const data = window.currentUserData || {};
+            
+            // Header elements
+            document.getElementById('user-display-name').textContent = data.username || 'Gamer';
+            document.getElementById('user-email-display').textContent = data.email || 'demo@gamer.com';
+            document.getElementById('user-avatar').src = data.avatar || 'https://placehold.co/100x100/bf00ff/ffffff?text=Gamer';
+
+            // Profile elements
+            document.getElementById('profile-username').textContent = data.username || 'Gamer';
+            document.getElementById('profile-email').textContent = data.email || 'demo@gamer.com';
+            document.getElementById('profile-fav-game').textContent = data.favGame || 'Sin especificar';
+            document.getElementById('profile-created-at').textContent = data.createdAt || 'Hoy';
+            document.getElementById('profile-avatar-large').src = data.avatar || 'https://placehold.co/150x150/bf00ff/ffffff?text=Gamer';
+
+            // Pre-fill Edit Form
+            document.getElementById('edit-username').value = data.username || '';
+            document.getElementById('edit-fav-game').value = data.favGame || '';
+
+            renderWishlist();
+        }
+
+        // Render Games Catalog
+        function renderGames(games = GAMES_DATABASE) {
+            const grid = document.getElementById('games-grid');
+            grid.innerHTML = '';
+
+            games.forEach(game => {
+                const isWishlisted = (window.currentUserData?.wishlist || []).includes(game.id);
+                
+                const card = document.createElement('div');
+                card.className = "bg-cardBg rounded-xl overflow-hidden border border-gray-800 hover:border-neonCyan transition-all duration-300 group flex flex-col justify-between";
+                card.innerHTML = `
+                    <div>
+                        <div class="relative h-48 overflow-hidden">
+                            <img src="${game.image}" alt="${game.title}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                            <span class="absolute top-3 right-3 bg-gray-900/80 text-neonCyan px-2.5 py-1 rounded-full text-xs font-orbitron font-bold border border-neonCyan/30">
+                                ★ ${game.rating}
+                            </span>
+                            <span class="absolute bottom-3 left-3 bg-purple-900/80 text-white px-2.5 py-0.5 rounded-md text-xs font-rajdhani uppercase font-semibold">
+                                ${game.genre}
+                            </span>
+                        </div>
+                        <div class="p-5">
+                            <h4 class="font-orbitron font-bold text-lg text-white group-hover:text-neonCyan transition">${game.title}</h4>
+                            <p class="text-gray-400 text-xs mt-2 line-clamp-2">${game.description}</p>
+                        </div>
+                    </div>
+                    <div class="px-5 pb-5 pt-2 flex items-center justify-between border-t border-gray-800/60 mt-2">
+                        <button onclick="toggleWishlist('${game.id}')" class="px-3 py-1.5 rounded-lg border text-xs font-orbitron transition flex items-center gap-1.5 ${isWishlisted ? 'border-neonPink text-neonPink bg-neonPink/10' : 'border-gray-700 text-gray-400 hover:text-white'}">
+                            <i class="fa-${isWishlisted ? 'solid' : 'regular'} fa-heart"></i>
+                            <span>${isWishlisted ? 'Deseado' : 'Guardar'}</span>
+                        </button>
+                        <button onclick="showToast('Iniciando juego...', 'info')" class="px-4 py-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-orbitron text-xs font-bold rounded-lg shadow">
+                            Jugar Ahora
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // Wishlist Toggle
+        window.toggleWishlist = async function(gameId) {
+            const user = auth.currentUser;
+            if (!user) {
+                showToast("Debes estar autenticado para guardar favoritos", "error");
+                return;
+            }
+
+            let currentWishlist = window.currentUserData?.wishlist || [];
+            if (currentWishlist.includes(gameId)) {
+                currentWishlist = currentWishlist.filter(id => id !== gameId);
+                showToast("Juego eliminado de tu lista", "info");
+            } else {
+                currentWishlist.push(gameId);
+                showToast("Juego añadido a tu lista de deseos", "success");
+            }
+
+            window.currentUserData.wishlist = currentWishlist;
+
+            // Save to Firestore
+            try {
+                const userDocRef = doc(db, 'artifacts', appId, 'users', user.uid, 'profile', 'info');
+                await updateDoc(userDocRef, { wishlist: currentWishlist });
+                renderGames();
+                renderWishlist();
+            } catch (err) {
+                console.error("Error updating wishlist:", err);
+            }
+        };
+
+        // Render Wishlist items in Profile
+        function renderWishlist() {
+            const container = document.getElementById('wishlist-container');
+            const wishlistIds = window.currentUserData?.wishlist || [];
+            const wishlistedGames = GAMES_DATABASE.filter(g => wishlistIds.includes(g.id));
+
+            if (wishlistedGames.length === 0) {
+                container.innerHTML = `<p class="text-gray-500 text-sm italic col-span-2">No has añadido juegos a tu lista aún.</p>`;
+                return;
+            }
+
+            container.innerHTML = wishlistedGames.map(game => `
+                <div class="bg-gray-900/80 p-3 rounded-xl border border-gray-800 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <img src="${game.image}" class="w-12 h-12 rounded-lg object-cover">
+                        <div>
+                            <h5 class="font-orbitron text-sm font-bold text-white">${game.title}</h5>
+                            <span class="text-xs text-neonCyan font-semibold">${game.genre}</span>
+                        </div>
+                    </div>
+                    <button onclick="toggleWishlist('${game.id}')" class="text-red-400 hover:text-red-300 p-2">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        // Filter Games
+        window.filterGames = function() {
+            const query = document.getElementById('game-search').value.toLowerCase();
+            const filtered = GAMES_DATABASE.filter(g => 
+                g.title.toLowerCase().includes(query) || 
+                g.genre.toLowerCase().includes(query)
+            );
+            renderGames(filtered);
+        };
+
+
+        // Auth Handler: Login
+        window.handleLogin = async function(e) {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                showToast("¡Bienvenido de nuevo, Gamer!", "success");
+            } catch (error) {
+                console.error(error);
+                let msg = "Error al iniciar sesión.";
+                if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+                    msg = "Correo o contraseña incorrectos.";
+                }
+                showToast(msg, "error");
+            }
+        };
+
+        // Auth Handler: Register
+        window.handleRegister = async function(e) {
+            e.preventDefault();
+            const username = document.getElementById('reg-username').value;
+            const email = document.getElementById('reg-email').value;
+            const favGame = document.getElementById('reg-fav-game').value;
+            const password = document.getElementById('reg-password').value;
+
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+
+                // Create full profile document in Firestore
+                const userData = {
+                    username: username,
+                    email: email,
+                    favGame: favGame,
+                    createdAt: new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' }),
+                    avatar: `https://placehold.co/150x150/bf00ff/ffffff?text=${username.charAt(0).toUpperCase()}`,
+                    wishlist: []
+                };
+
+                const userDocRef = doc(db, 'artifacts', appId, 'users', user.uid, 'profile', 'info');
+                await setDoc(userDocRef, userData);
+
+                showToast("¡Cuenta creada exitosamente!", "success");
+            } catch (error) {
+                console.error(error);
+                let msg = "Error al registrar la cuenta.";
+                if (error.code === 'auth/email-already-in-use') {
+                    msg = "El correo ya está registrado.";
+                } else if (error.code === 'auth/weak-password') {
+                    msg = "La contraseña debe tener al menos 6 caracteres.";
+                }
+                showToast(msg, "error");
+            }
+        };
+
+        // Auth Handler: Guest Login
+        window.handleGuestLogin = async function() {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+                showToast("Sesión iniciada en modo invitado", "info");
+            } catch (error) {
+                console.error("Guest Auth error:", error);
+                showToast("Error en inicio demo", "error");
+            }
+        };
+
+        // Auth Handler: Logout
+        window.handleLogout = async function() {
+            try {
+                await signOut(auth);
+                showToast("Sesión cerrada correctamente", "info");
+            } catch (error) {
+                showToast("Error al cerrar sesión", "error");
+            }
+        };
+
+        // Profile Editing Logic
+        window.toggleProfileEdit = function() {
+            const form = document.getElementById('edit-profile-form');
+            form.classList.toggle('hidden');
+        };
+
+        window.saveProfileChanges = async function(e) {
+            e.preventDefault();
+            const user = auth.currentUser;
+            if (!user) return;
+
+            const newUsername = document.getElementById('edit-username').value;
+            const newFavGame = document.getElementById('edit-fav-game').value;
+
+            try {
+                const userDocRef = doc(db, 'artifacts', appId, 'users', user.uid, 'profile', 'info');
+                await updateDoc(userDocRef, {
+                    username: newUsername,
+                    favGame: newFavGame
+                });
+
+                window.currentUserData.username = newUsername;
+                window.currentUserData.favGame = newFavGame;
+                
+                updateDashboardUI();
+                toggleProfileEdit();
+                showToast("Perfil actualizado correctamente", "success");
+            } catch (err) {
+                console.error("Error updating profile:", err);
+                showToast("Error al actualizar perfil", "error");
+            }
+        };
+
+        // Random Avatar Generator
+        window.changeAvatar = async function() {
+            const user = auth.currentUser;
+            if (!user) return;
+
+            const colors = ['bf00ff', '00f3ff', 'ff007f', '00ff66', 'ffaa00'];
+            const randomColor = colors[Math.floor(Math.random() * colors.length)];
+            const letter = (window.currentUserData?.username || 'G').charAt(0).toUpperCase();
+            const newAvatar = `https://placehold.co/150x150/${randomColor}/ffffff?text=${letter}`;
+
+            try {
+                const userDocRef = doc(db, 'artifacts', appId, 'users', user.uid, 'profile', 'info');
+                await updateDoc(userDocRef, { avatar: newAvatar });
+                window.currentUserData.avatar = newAvatar;
+                updateDashboardUI();
+                showToast("Avatar actualizado", "success");
+            } catch (err) {
+                console.error("Error updating avatar:", err);
+            }
+        };
+
+        
+        // Listen to Auth State Changes
+        onAuthStateChanged(auth, async (user) => {
+            const authScreen = document.getElementById('auth-screen');
+            const dashboardScreen = document.getElementById('dashboard-screen');
+
+            if (user) {
+                // User is signed in
+                await fetchUserData(user);
+                authScreen.classList.add('hidden');
+                dashboardScreen.classList.remove('hidden');
+                renderGames();
+            } else {
+                // User is signed out
+                window.currentUserData = null;
+                authScreen.classList.remove('hidden');
+                dashboardScreen.classList.add('hidden');
+            }
+        });
+
+    </script>
+</body>
+</html>
