@@ -87,7 +87,6 @@
     <!-- Toast Notification Container -->
     <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-3"></div>
 
-
     <!-- ==================== SCREEN 1: AUTHENTICATION ==================== -->
     <div id="auth-screen" class="min-h-screen flex items-center justify-center p-4">
         <div class="max-w-md w-full bg-cardBg backdrop-blur-md rounded-2xl p-8 neon-border-purple transition-all duration-300">
@@ -259,7 +258,7 @@
                         <span class="bg-neonPurple/20 text-neonPurple px-3 py-1 rounded-full text-xs font-orbitron tracking-wider border border-neonPurple/50 uppercase">Destacado del Mes</span>
                         <h2 class="font-orbitron text-3xl md:text-5xl font-black text-white my-3">CYBERPUNK 2077: PHANTOM LIBERTY</h2>
                         <p class="text-gray-300 text-sm md:text-base mb-6">Aventúrate en Dogtown en esta emocionante expansión de espionaje y supervivencia urbana.</p>
-                        <button class="px-6 py-3 bg-neonCyan text-black font-orbitron font-bold rounded-lg hover:bg-white transition flex items-center gap-2 shadow-lg shadow-neonCyan/30">
+                        <button onclick="showToast('Cargando vídeo promocional...', 'info')" class="px-6 py-3 bg-neonCyan text-black font-orbitron font-bold rounded-lg hover:bg-white transition flex items-center gap-2 shadow-lg shadow-neonCyan/30">
                             <i class="fa-solid fa-play"></i> Ver Tráiler Destacado
                         </button>
                     </div>
@@ -358,55 +357,13 @@
 
         <!-- Footer -->
         <footer class="bg-gray-900/80 border-t border-gray-800 py-6 text-center text-xs text-gray-500">
-            <p>© 2026 GamerVerse Inc. Sistema de Autenticación & Persistencia en Firebase.</p>
+            <p>© 2026 GamerVerse Inc. Sistema de Autenticación & Persistencia Flexible (GitHub Pages / Local Database Ready).</p>
         </footer>
     </div>
 
-    <!-- Firebase Libraries -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { 
-            getAuth, 
-            signInWithEmailAndPassword, 
-            createUserWithEmailAndPassword, 
-            signOut, 
-            onAuthStateChanged,
-            signInAnonymously,
-            signInWithCustomToken
-        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { 
-            getFirestore, 
-            doc, 
-            setDoc, 
-            getDoc, 
-            updateDoc 
-        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // Global App & Firebase Configuration
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'gamerverse-app';
-        
-        // Default Config with fallback
-        const firebaseConfig = typeof __firebase_config !== 'undefined' 
-            ? JSON.parse(__firebase_config) 
-            : {
-                apiKey: "AIzaSyDemoKeyForTesting1234567890",
-                authDomain: "demo-project.firebaseapp.com",
-                projectId: "demo-project",
-                storageBucket: "demo-project.appspot.com",
-                messagingSenderId: "1234567890",
-                appId: "1:1234567890:web:abcdef123456"
-            };
-
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        // Global State
-        window.currentUserData = null;
-        window.userWishlist = [];
-
-        // Sample Games Database
+    <!-- Application Script -->
+    <script>
+        // Global Database for Video Games
         const GAMES_DATABASE = [
             {
                 id: 'game-1',
@@ -458,6 +415,31 @@
             }
         ];
 
+        // Storage Management System (LocalStorage Engine with Firebase Fallback compatibility)
+        const StorageDB = {
+            getUsers: function() {
+                return JSON.parse(localStorage.getItem('gv_users') || '{}');
+            },
+            saveUsers: function(users) {
+                localStorage.setItem('gv_users', JSON.stringify(users));
+            },
+            getCurrentUser: function() {
+                return JSON.parse(sessionStorage.getItem('gv_current_user') || localStorage.getItem('gv_session_user') || 'null');
+            },
+            setCurrentUser: function(user, remember = true) {
+                sessionStorage.setItem('gv_current_user', JSON.stringify(user));
+                if (remember) {
+                    localStorage.setItem('gv_session_user', JSON.stringify(user));
+                }
+            },
+            clearSession: function() {
+                sessionStorage.removeItem('gv_current_user');
+                localStorage.removeItem('gv_session_user');
+            }
+        };
+
+        // State Global
+        window.currentUserData = null;
 
         // Toast Helper
         window.showToast = function(message, type = 'info') {
@@ -531,38 +513,7 @@
             }
         };
 
-
-        // Fetch User Data from Firestore
-        async function fetchUserData(user) {
-            try {
-                // RULE 1: Standardized user path
-                const userDocRef = doc(db, 'artifacts', appId, 'users', user.uid, 'profile', 'info');
-                const docSnap = await getDoc(userDocRef);
-
-                if (docSnap.exists()) {
-                    window.currentUserData = docSnap.data();
-                } else {
-                    // Create initial profile if missing
-                    const initialData = {
-                        username: user.displayName || user.email.split('@')[0],
-                        email: user.email || 'invitado@gamerverse.com',
-                        favGame: 'Cyberpunk 2077',
-                        createdAt: new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' }),
-                        avatar: `https://placehold.co/150x150/bf00ff/ffffff?text=${(user.email || 'Gamer').charAt(0).toUpperCase()}`,
-                        wishlist: []
-                    };
-                    await setDoc(userDocRef, initialData);
-                    window.currentUserData = initialData;
-                }
-
-                updateDashboardUI();
-            } catch (error) {
-                console.error("Error fetching user profile:", error);
-                showToast("Error al cargar datos de usuario", "error");
-            }
-        }
-
-        // Update Dashboard with User Data
+        // Render Dashboard UI elements with Active User Data
         function updateDashboardUI() {
             const data = window.currentUserData || {};
             
@@ -625,15 +576,14 @@
             });
         }
 
-        // Wishlist Toggle
-        window.toggleWishlist = async function(gameId) {
-            const user = auth.currentUser;
-            if (!user) {
-                showToast("Debes estar autenticado para guardar favoritos", "error");
+        // Toggle Items in Wishlist
+        window.toggleWishlist = function(gameId) {
+            if (!window.currentUserData) {
+                showToast("Debes iniciar sesión para guardar favoritos", "error");
                 return;
             }
 
-            let currentWishlist = window.currentUserData?.wishlist || [];
+            let currentWishlist = window.currentUserData.wishlist || [];
             if (currentWishlist.includes(gameId)) {
                 currentWishlist = currentWishlist.filter(id => id !== gameId);
                 showToast("Juego eliminado de tu lista", "info");
@@ -644,18 +594,21 @@
 
             window.currentUserData.wishlist = currentWishlist;
 
-            // Save to Firestore
-            try {
-                const userDocRef = doc(db, 'artifacts', appId, 'users', user.uid, 'profile', 'info');
-                await updateDoc(userDocRef, { wishlist: currentWishlist });
-                renderGames();
-                renderWishlist();
-            } catch (err) {
-                console.error("Error updating wishlist:", err);
+            // Sync with local storage
+            if (window.currentUserData.email !== 'invitado@gamerverse.com') {
+                const users = StorageDB.getUsers();
+                if (users[window.currentUserData.email]) {
+                    users[window.currentUserData.email].wishlist = currentWishlist;
+                    StorageDB.saveUsers(users);
+                }
             }
+            StorageDB.setCurrentUser(window.currentUserData);
+
+            renderGames();
+            renderWishlist();
         };
 
-        // Render Wishlist items in Profile
+        // Render Wishlist items inside Profile
         function renderWishlist() {
             const container = document.getElementById('wishlist-container');
             const wishlistIds = window.currentUserData?.wishlist || [];
@@ -675,14 +628,14 @@
                             <span class="text-xs text-neonCyan font-semibold">${game.genre}</span>
                         </div>
                     </div>
-                    <button onclick="toggleWishlist('${game.id}')" class="text-red-400 hover:text-red-300 p-2">
+                    <button onclick="toggleWishlist('${game.id}')" class="text-red-400 hover:text-red-300 p-2" title="Eliminar">
                         <i class="fa-solid fa-trash-can"></i>
                     </button>
                 </div>
             `).join('');
         }
 
-        // Filter Games
+        // Filter Games in Search
         window.filterGames = function() {
             const query = document.getElementById('game-search').value.toLowerCase();
             const filtered = GAMES_DATABASE.filter(g => 
@@ -692,163 +645,164 @@
             renderGames(filtered);
         };
 
-
         // Auth Handler: Login
-        window.handleLogin = async function(e) {
+        window.handleLogin = function(e) {
             e.preventDefault();
-            const email = document.getElementById('login-email').value;
+            const email = document.getElementById('login-email').value.trim().toLowerCase();
             const password = document.getElementById('login-password').value;
 
-            try {
-                await signInWithEmailAndPassword(auth, email, password);
+            const users = StorageDB.getUsers();
+            const user = users[email];
+
+            if (user && user.password === password) {
+                window.currentUserData = user;
+                StorageDB.setCurrentUser(user);
                 showToast("¡Bienvenido de nuevo, Gamer!", "success");
-            } catch (error) {
-                console.error(error);
-                let msg = "Error al iniciar sesión.";
-                if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
-                    msg = "Correo o contraseña incorrectos.";
-                }
-                showToast(msg, "error");
+                initSessionUI();
+            } else {
+                showToast("Correo o contraseña incorrectos.", "error");
             }
         };
 
         // Auth Handler: Register
-        window.handleRegister = async function(e) {
+        window.handleRegister = function(e) {
             e.preventDefault();
-            const username = document.getElementById('reg-username').value;
-            const email = document.getElementById('reg-email').value;
-            const favGame = document.getElementById('reg-fav-game').value;
+            const username = document.getElementById('reg-username').value.trim();
+            const email = document.getElementById('reg-email').value.trim().toLowerCase();
+            const favGame = document.getElementById('reg-fav-game').value.trim();
             const password = document.getElementById('reg-password').value;
 
-            try {
-                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                const user = userCredential.user;
+            const users = StorageDB.getUsers();
 
-                // Create full profile document in Firestore
-                const userData = {
-                    username: username,
-                    email: email,
-                    favGame: favGame,
-                    createdAt: new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' }),
-                    avatar: `https://placehold.co/150x150/bf00ff/ffffff?text=${username.charAt(0).toUpperCase()}`,
-                    wishlist: []
-                };
-
-                const userDocRef = doc(db, 'artifacts', appId, 'users', user.uid, 'profile', 'info');
-                await setDoc(userDocRef, userData);
-
-                showToast("¡Cuenta creada exitosamente!", "success");
-            } catch (error) {
-                console.error(error);
-                let msg = "Error al registrar la cuenta.";
-                if (error.code === 'auth/email-already-in-use') {
-                    msg = "El correo ya está registrado.";
-                } else if (error.code === 'auth/weak-password') {
-                    msg = "La contraseña debe tener al menos 6 caracteres.";
-                }
-                showToast(msg, "error");
+            if (users[email]) {
+                showToast("El correo ya se encuentra registrado.", "error");
+                return;
             }
+
+            const newUser = {
+                username: username,
+                email: email,
+                favGame: favGame,
+                password: password,
+                createdAt: new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' }),
+                avatar: `https://placehold.co/150x150/bf00ff/ffffff?text=${username.charAt(0).toUpperCase()}`,
+                wishlist: []
+            };
+
+            users[email] = newUser;
+            StorageDB.saveUsers(users);
+
+            window.currentUserData = newUser;
+            StorageDB.setCurrentUser(newUser);
+
+            showToast("¡Cuenta creada exitosamente!", "success");
+            initSessionUI();
         };
 
         // Auth Handler: Guest Login
-        window.handleGuestLogin = async function() {
-            try {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-                showToast("Sesión iniciada en modo invitado", "info");
-            } catch (error) {
-                console.error("Guest Auth error:", error);
-                showToast("Error en inicio demo", "error");
-            }
+        window.handleGuestLogin = function() {
+            const guestUser = {
+                username: 'GamerInvitado',
+                email: 'invitado@gamerverse.com',
+                favGame: 'Cyberpunk 2077',
+                createdAt: new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' }),
+                avatar: 'https://placehold.co/150x150/00f3ff/000000?text=G',
+                wishlist: []
+            };
+
+            window.currentUserData = guestUser;
+            StorageDB.setCurrentUser(guestUser, false);
+
+            showToast("Sesión iniciada en modo invitado", "info");
+            initSessionUI();
         };
 
         // Auth Handler: Logout
-        window.handleLogout = async function() {
-            try {
-                await signOut(auth);
-                showToast("Sesión cerrada correctamente", "info");
-            } catch (error) {
-                showToast("Error al cerrar sesión", "error");
-            }
+        window.handleLogout = function() {
+            StorageDB.clearSession();
+            window.currentUserData = null;
+            showToast("Sesión cerrada correctamente", "info");
+            
+            document.getElementById('auth-screen').classList.remove('hidden');
+            document.getElementById('dashboard-screen').classList.add('hidden');
         };
 
-        // Profile Editing Logic
+        // Toggle Profile Form
         window.toggleProfileEdit = function() {
             const form = document.getElementById('edit-profile-form');
             form.classList.toggle('hidden');
         };
 
-        window.saveProfileChanges = async function(e) {
+        // Save Profile Changes
+        window.saveProfileChanges = function(e) {
             e.preventDefault();
-            const user = auth.currentUser;
-            if (!user) return;
+            if (!window.currentUserData) return;
 
-            const newUsername = document.getElementById('edit-username').value;
-            const newFavGame = document.getElementById('edit-fav-game').value;
+            const newUsername = document.getElementById('edit-username').value.trim();
+            const newFavGame = document.getElementById('edit-fav-game').value.trim();
 
-            try {
-                const userDocRef = doc(db, 'artifacts', appId, 'users', user.uid, 'profile', 'info');
-                await updateDoc(userDocRef, {
-                    username: newUsername,
-                    favGame: newFavGame
-                });
+            window.currentUserData.username = newUsername || window.currentUserData.username;
+            window.currentUserData.favGame = newFavGame || window.currentUserData.favGame;
 
-                window.currentUserData.username = newUsername;
-                window.currentUserData.favGame = newFavGame;
-                
-                updateDashboardUI();
-                toggleProfileEdit();
-                showToast("Perfil actualizado correctamente", "success");
-            } catch (err) {
-                console.error("Error updating profile:", err);
-                showToast("Error al actualizar perfil", "error");
+            if (window.currentUserData.email !== 'invitado@gamerverse.com') {
+                const users = StorageDB.getUsers();
+                if (users[window.currentUserData.email]) {
+                    users[window.currentUserData.email].username = window.currentUserData.username;
+                    users[window.currentUserData.email].favGame = window.currentUserData.favGame;
+                    StorageDB.saveUsers(users);
+                }
             }
+            StorageDB.setCurrentUser(window.currentUserData);
+
+            updateDashboardUI();
+            toggleProfileEdit();
+            showToast("Perfil actualizado correctamente", "success");
         };
 
-        // Random Avatar Generator
-        window.changeAvatar = async function() {
-            const user = auth.currentUser;
-            if (!user) return;
+        // Change Avatar Randomly
+        window.changeAvatar = function() {
+            if (!window.currentUserData) return;
 
             const colors = ['bf00ff', '00f3ff', 'ff007f', '00ff66', 'ffaa00'];
             const randomColor = colors[Math.floor(Math.random() * colors.length)];
-            const letter = (window.currentUserData?.username || 'G').charAt(0).toUpperCase();
+            const letter = (window.currentUserData.username || 'G').charAt(0).toUpperCase();
             const newAvatar = `https://placehold.co/150x150/${randomColor}/ffffff?text=${letter}`;
 
-            try {
-                const userDocRef = doc(db, 'artifacts', appId, 'users', user.uid, 'profile', 'info');
-                await updateDoc(userDocRef, { avatar: newAvatar });
-                window.currentUserData.avatar = newAvatar;
-                updateDashboardUI();
-                showToast("Avatar actualizado", "success");
-            } catch (err) {
-                console.error("Error updating avatar:", err);
+            window.currentUserData.avatar = newAvatar;
+
+            if (window.currentUserData.email !== 'invitado@gamerverse.com') {
+                const users = StorageDB.getUsers();
+                if (users[window.currentUserData.email]) {
+                    users[window.currentUserData.email].avatar = newAvatar;
+                    StorageDB.saveUsers(users);
+                }
             }
+            StorageDB.setCurrentUser(window.currentUserData);
+
+            updateDashboardUI();
+            showToast("Avatar actualizado", "success");
         };
 
-        
-        // Listen to Auth State Changes
-        onAuthStateChanged(auth, async (user) => {
+        // Initialize Session UI State
+        function initSessionUI() {
             const authScreen = document.getElementById('auth-screen');
             const dashboardScreen = document.getElementById('dashboard-screen');
 
-            if (user) {
-                // User is signed in
-                await fetchUserData(user);
-                authScreen.classList.add('hidden');
-                dashboardScreen.classList.remove('hidden');
-                renderGames();
-            } else {
-                // User is signed out
-                window.currentUserData = null;
-                authScreen.classList.remove('hidden');
-                dashboardScreen.classList.add('hidden');
+            authScreen.classList.add('hidden');
+            dashboardScreen.classList.remove('hidden');
+
+            updateDashboardUI();
+            renderGames();
+        }
+
+        // On Page Load: Restore session if exists
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedUser = StorageDB.getCurrentUser();
+            if (savedUser) {
+                window.currentUserData = savedUser;
+                initSessionUI();
             }
         });
-
     </script>
 </body>
 </html>
