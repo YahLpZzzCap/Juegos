@@ -1,7 +1,7 @@
 const Friends=(()=>{
- const K='pf_net';let net=null,data={friends:[],incoming:[],outgoing:[]},ok=null,box=null,res=[],q='',tm;
+ const K='pf_net',API=(window.CHELES_API_URL||'').replace(/\/$/,'');let net=null,data={friends:[],incoming:[],outgoing:[]},ok=null,box=null,res=[],q='',tm;
  try{net=JSON.parse(localStorage.getItem(K))}catch(e){}
- const api=async(p,body)=>{const h={'Content-Type':'application/json'};if(net){h['x-id']=net.id;h['x-token']=net.token}const r=await fetch('/api/'+p,{method:body?'POST':'GET',headers:h,body:body?JSON.stringify(body):undefined});if(!r.ok)throw new Error(r.status);return r.json()};
+ const api=async(p,body)=>{const h={'Content-Type':'application/json'};if(net){h['x-id']=net.id;h['x-token']=net.token}const r=await fetch(API+'/api/'+p,{method:body?'POST':'GET',headers:h,body:body?JSON.stringify(body):undefined});if(!r.ok)throw new Error(r.status);return r.json()};
  const rd=k=>{try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}};
  const mine=()=>{const p=rd('pf_profile'),l=rd('pf_lib')||[],s=Profile.stats();return p&&{name:p.name,bio:p.bio,avatar:p.avatar,status:p.status||'online',title:p.title||'',fav:p.fav||'',games:s.games,achs:s.achs,lib:l.map(x=>x.id)}};
  async function sync(){
@@ -19,7 +19,7 @@ const Friends=(()=>{
  const rel=u=>u.rel==='friend'?'<small>Ya son amigos</small>':u.rel==='sent'?'<small>Pendiente</small>':u.rel==='got'?`<button class="cta" data-fa="yes:${u.id}">Aceptar</button>`:`<button class="cta" data-fa="add:${u.id}">Añadir</button>`;
  function draw(){
   if(!box||!document.body.contains(box))return;
-  if(ok===false){box.innerHTML='<div class="note"><b>Servidor no conectado</b><p>Para tener amigos reales abre una terminal en la carpeta de Cheles.py, ejecuta <code>node server.js</code> (o haz doble clic en <code>iniciar.bat</code>) y entra a <code>http://localhost:3000</code>.</p></div>';return}
+  if(ok===false){box.innerHTML='<div class="note"><b>Servidor no conectado</b><p>Comprueba que el servidor de Cheles.py esté publicado y que la dirección de api-config.js sea correcta.</p></div>';return}
   if(!net){box.innerHTML='<p>Conectando…</p>';return}
   const m=mine();
   box.innerHTML=`<div class="fhead"><span>Tu código de amigo: <b>${esc(m.name)}#${net.id}</b></span><button class="ghost" data-fa="copy">Copiar</button></div><input id="fs" class="fsearch" placeholder="Buscar jugadores por nombre o código" value="${esc(q)}" aria-label="Buscar jugadores"><div id="fres">${res.map(u=>card(u,rel(u))).join('')}</div>${data.incoming.length?`<h3>Solicitudes</h3>${data.incoming.map(u=>card(u,`<button class="cta" data-fa="yes:${u.id}">Aceptar</button><button class="ghost" data-fa="no:${u.id}">Rechazar</button>`)).join('')}`:''}<h3>Amigos (${data.friends.length})</h3>${data.friends.length?data.friends.map(u=>card(u,`<button class="ghost" data-fa="view:${u.id}">Ver perfil</button><button class="ghost" data-fa="del:${u.id}">Eliminar</button>`)).join(''):'<p>Aún no tienes amigos. Busca a alguien por su nombre o su código.</p>'}${data.outgoing.length?`<h3>Enviadas</h3>${data.outgoing.map(u=>card(u,'<small>Pendiente</small>')).join('')}`:''}`;
